@@ -1,0 +1,49 @@
+import time
+from datetime import datetime
+import csv
+import board
+import adafruit_bmp280
+
+# I2C en sensor initialiseren (gebruik address=0x76 of 0x77 op basis van je i2cdetect)
+i2c = board.I2C()
+bmp280 = adafruit_bmp280.Adafruit_BMP280_I2C(i2c, address=0x76)
+
+# Optionele instelling voor zeeniveau druk
+bmp280.sea_level_pressure = 1013.25
+
+# Naam van het CSV-bestand
+csv_filename = "bmp280_log.csv"
+
+# Bestand openen en optioneel de header (kolomnamen) toevoegen als het nieuw is
+try:
+    with open(csv_filename, mode='x', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Timestamp", "Temperature (°C)", "Pressure (hPa)", "Altitude (m)"])
+    print(Nieuw CSV-bestand aangemaakt: {csv_filename})
+except FileExistsFileError:
+    print(Gebruikt bestaand CSV-bestand: {csv_filename})
+
+print("\nSensordata opslaan naar CSV elke 5 seconden (Druk op Ctrl+C om te stoppen)...\n")
+
+try:
+    while True:
+        # Huidige datum en tijd ophalen
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        temp = round(bmp280.temperature, 2)
+        pres = round(bmp280.pressure, 2)
+        alt = round(bmp280.altitude, 2)
+        
+        # Weergave in de terminal
+        print(f"[{now}] Temp: {temp} °C | Druk: {pres} hPa | Hoogte: {alt} m")
+        
+        # Wegschrijven naar het CSV-bestand
+        with open(csv_filename, mode='a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([now, temp, pres, alt])
+            
+        # Wacht 5 seconden
+        time.sleep(5)
+
+except KeyboardInterrupt:
+    print("\nLogging gestopt door gebruiker. Je CSV-bestand is opgeslagen.")
