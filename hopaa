@@ -1,0 +1,24 @@
+import adafruit_bmp280
+from time import sleep
+import time as time
+import board
+
+bmp280 = adafruit_bmp280.Adafruit_BMP280()
+f = open("mijndata.csv","w")
+f.write("timestamp,temp,pressure,altitude/n")
+while True:
+    try:
+        timestamp = time.ctime()
+        temp = round(bmp280.temperature, 2)
+        pres = round(bmp280.pressure, 2)
+        alt = round(bmp280.altitude, 2)
+        
+        f.write(f"{timestamp},{temp},{pres},{alt}/n")
+
+    except RuntimeError as error:
+        print(f"Fout bij uitlezen sensor (komt vaker voor): {error}")
+    except Exception as error:
+        print(f"Onverwachte fout: {error}")
+        break
+    sleep(5)
+
